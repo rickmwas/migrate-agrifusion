@@ -4,70 +4,66 @@
 
 **URL**: https://lovable.dev/projects/d4501639-b98a-4574-91c1-a85eb2e54baf
 
-## How can I edit this code?
+## Local development and running the app (Supabase + Gemini server)
 
-There are several ways of editing your application.
+This repository was generated from an automated tool and originally used a proprietary runtime. The project has been updated to be independent of that service and to use Supabase for backend and Google Vertex AI (Gemini) for LLM work. Follow these steps to run the app locally.
 
-**Use Lovable**
+Prerequisites
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/d4501639-b98a-4574-91c1-a85eb2e54baf) and start prompting.
+- Node.js 18+ and npm/yarn
+- A Supabase project (https://supabase.com)
+- Supabase service role key (for server-side operations)
+- Google Vertex AI credentials OR VERTEX_API_KEY
 
-Changes made via Lovable will be committed automatically to this repo.
+1) Install dependencies
 
-**Use your preferred IDE**
+```powershell
+npm install
+```
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+2) Add environment variables
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+Copy `.env.example` to `.env` and fill in the real values. Required variables:
 
-Follow these steps:
+- VITE_SUPABASE_URL
+- VITE_SUPABASE_PUBLISHABLE_KEY
+- SUPABASE_SERVICE_ROLE_KEY (server-only)
+- VERTEX_API_KEY OR set GOOGLE_APPLICATION_CREDENTIALS to point to a service account JSON
+- VERTEX_PROJECT_ID
+- VERTEX_LOCATION (e.g., us-central1)
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+3) Run Supabase migrations
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+If using the Supabase CLI:
 
-# Step 3: Install the necessary dependencies.
-npm i
+```powershell
+supabase db push --project-ref <your-project-ref>
+# or run the SQL in supabase/migrations/20251031_create_schema.sql
+psql <connection-string> -f supabase/migrations/20251031_create_schema.sql
+```
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+4) Start the backend server (handles LLM calls and server-side DB writes)
+
+```powershell
+npm run dev:server
+```
+
+This starts a small Express server on port 8787 by default. It exposes:
+
+- POST /api/market-analyze — accepts { produce_type, location, quantity, quality_grade, additional_notes } and performs LLM calls + saves to Supabase
+- GET /api/market-trends?limit=5 — returns recent analyses
+
+5) Start the frontend
+
+In a separate terminal:
+
+```powershell
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+Notes
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+- Do NOT commit `.env` (this repo now includes `.env.example`).
+- If you don't have Vertex credentials, you can stub the LLM responses during development or set VERTEX_API_KEY for testing.
 
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/d4501639-b98a-4574-91c1-a85eb2e54baf) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+If you'd like, I can add scripts to run the frontend and backend together (concurrently) or prepare Docker configs.
