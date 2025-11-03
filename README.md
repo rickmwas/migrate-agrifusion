@@ -1,8 +1,8 @@
-# Welcome to your Lovable project
+# Welcome to my AgriFusion Project
 
 ## Project info
 
-**URL**: https://lovable.dev/projects/d4501639-b98a-4574-91c1-a85eb2e54baf
+**URL**: https://agrifusion.vercel.app
 
 ## Local development and running the app (Supabase + Gemini server)
 
@@ -28,9 +28,8 @@ Copy `.env.example` to `.env` and fill in the real values. Required variables:
 - VITE_SUPABASE_URL
 - VITE_SUPABASE_PUBLISHABLE_KEY
 - SUPABASE_SERVICE_ROLE_KEY (server-only)
-- VERTEX_API_KEY OR set GOOGLE_APPLICATION_CREDENTIALS to point to a service account JSON
-- VERTEX_PROJECT_ID
-- VERTEX_LOCATION (e.g., us-central1)
+- GEMINI_API_KEY OR set GOOGLE_APPLICATION_CREDENTIALS to point to a service account JSON
+- SUPABASE_PROJECT_ID
 
 3) Run Supabase migrations
 
@@ -64,6 +63,6 @@ npm run dev
 Notes
 
 - Do NOT commit `.env` (this repo now includes `.env.example`).
-- If you don't have Vertex credentials, you can stub the LLM responses during development or set VERTEX_API_KEY for testing.
+- If you don't have Gemini credentials, you can stub the LLM responses during development or set Gemini_API_KEY for testing.
 
-If you'd like, I can add scripts to run the frontend and backend together (concurrently) or prepare Docker configs.
+
