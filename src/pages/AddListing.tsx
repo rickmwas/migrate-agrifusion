@@ -22,6 +22,15 @@ export default function AddListing() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user) throw new Error('Not authenticated');
 
+      // Fetch user profile for seller information
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('full_name, phone_number')
+        .eq('id', session.user.id)
+        .single();
+
+      if (profileError) throw profileError;
+
       let imageUrl = null;
       if (image) {
         const fileName = `${Date.now()}_${image.name}`;
@@ -38,9 +47,12 @@ export default function AddListing() {
         price: form.price || null,
         unit: form.unit,
         category: form.category,
-        city: form.city,
+        location: form.city, // Changed from city to location
         image_url: imageUrl,
         quantity_available: form.quantity_available || null,
+        seller_name: profile?.full_name || session.user.email?.split('@')[0] || 'Unknown Seller',
+        seller_phone: profile?.phone_number || null,
+        seller_email: session.user.email || null,
       };
 
       const { error } = await supabase.from('market_listings').insert([insert]);
@@ -48,8 +60,9 @@ export default function AddListing() {
 
       toast.success('Listing created');
       navigate('/marketplace');
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to create listing');
+    } catch (err: unknown) {
+      const error = err as Error;
+      toast.error(error.message || 'Failed to create listing');
     } finally {
       setLoading(false);
     }

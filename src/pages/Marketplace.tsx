@@ -139,73 +139,83 @@ export default function Marketplace() {
           ) : filteredListings.length > 0 ? (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredListings.map((listing) => (
-                <Card key={listing.id} className="overflow-hidden shadow-lg hover:shadow-xl transition-all hover:-translate-y-1">
-                  {listing.image_url && (
-                    <img
-                      src={listing.image_url}
-                      alt={listing.title}
-                      className="w-full h-48 object-cover"
-                    />
-                  )}
-                  <CardContent className="p-6 space-y-4">
-                    <div className="space-y-2">
-                      <div className="flex items-start justify-between gap-2">
-                        <h3 className="font-bold text-xl line-clamp-1">{listing.title}</h3>
-                        <Badge className={categoryColors[listing.category] || "bg-muted"}>
-                          {listing.category}
-                        </Badge>
+                <Link key={listing.id} to={`/listing/${listing.id}`}>
+                  <Card className="overflow-hidden shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 cursor-pointer">
+                    {listing.image_url && (
+                      <img
+                        src={listing.image_url}
+                        alt={listing.title}
+                        className="w-full h-48 object-cover"
+                      />
+                    )}
+                    <CardContent className="p-6 space-y-4">
+                      <div className="space-y-2">
+                        <div className="flex items-start justify-between gap-2">
+                          <h3 className="font-bold text-xl line-clamp-1">{listing.title}</h3>
+                          <Badge className={categoryColors[listing.category] || "bg-muted"}>
+                            {listing.category}
+                          </Badge>
+                        </div>
+                        <p className="text-2xl font-bold text-success">
+                          KSh {Number(listing.price).toLocaleString()}
+                          <span className="text-sm text-muted-foreground"> / {listing.unit}</span>
+                        </p>
+                        {listing.quantity_available && (
+                          <p className="text-sm text-muted-foreground">
+                            Available: {listing.quantity_available} {listing.unit}s
+                          </p>
+                        )}
                       </div>
-                      <p className="text-2xl font-bold text-success">
-                        KSh {Number(listing.price).toLocaleString()}
-                        <span className="text-sm text-muted-foreground"> / {listing.unit}</span>
-                      </p>
-                      {listing.quantity_available && (
-                        <p className="text-sm text-muted-foreground">
-                          Available: {listing.quantity_available} {listing.unit}s
+
+                      {listing.description && (
+                        <p className="text-muted-foreground text-sm line-clamp-2">
+                          {listing.description}
                         </p>
                       )}
-                    </div>
 
-                    {listing.description && (
-                      <p className="text-muted-foreground text-sm line-clamp-2">
-                        {listing.description}
-                      </p>
-                    )}
-
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <MapPin className="h-4 w-4" />
-                      {listing.location}
-                    </div>
-
-                    <div className="space-y-2 pt-2">
-                      <p className="text-sm font-medium">Seller: {listing.seller_name}</p>
-                      <div className="flex gap-2">
-                        {listing.seller_phone && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="flex-1"
-                            onClick={() => window.location.href = `tel:${listing.seller_phone}`}
-                          >
-                            <Phone className="h-4 w-4 mr-1" />
-                            Call
-                          </Button>
-                        )}
-                        {listing.seller_email && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="flex-1"
-                            onClick={() => window.location.href = `mailto:${listing.seller_email}`}
-                          >
-                            <Mail className="h-4 w-4 mr-1" />
-                            Email
-                          </Button>
-                        )}
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <MapPin className="h-4 w-4" />
+                        {listing.location}
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
+
+                      <div className="space-y-2 pt-2">
+                        <p className="text-sm font-medium">Seller: {listing.seller_name}</p>
+                        <div className="flex gap-2">
+                          {listing.seller_phone && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="flex-1"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                window.location.href = `tel:${listing.seller_phone}`;
+                              }}
+                            >
+                              <Phone className="h-4 w-4 mr-1" />
+                              Call
+                            </Button>
+                          )}
+                          {listing.seller_email && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="flex-1"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                window.location.href = `mailto:${listing.seller_email}`;
+                              }}
+                            >
+                              <Mail className="h-4 w-4 mr-1" />
+                              Email
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
               ))}
             </div>
           ) : (

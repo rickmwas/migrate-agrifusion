@@ -3,11 +3,22 @@ import { createClient } from '@supabase/supabase-js';
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-const supabaseAdmin = createClient(SUPABASE_URL || '', SUPABASE_SERVICE_ROLE_KEY || '', {
-  auth: { persistSession: false },
-});
+let supabaseAdmin: any = null;
+
+if (SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
+  supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+    auth: { persistSession: false },
+  });
+} else {
+  console.warn('Supabase server URL or service role key not set; market-trends endpoint will not function until env vars are provided.');
+}
 
 export default async function handler(req: any, res: any) {
+  // Return a clear error if Supabase admin client isn't configured to avoid unhandled TypeErrors
+  if (!supabaseAdmin) {
+    console.error('Supabase admin not initialized in market-trends handler');
+    return res.status(500).json({ error: 'Supabase not configured on server' });
+  }
   try {
     const q = req.query || (req.url && Object.fromEntries(new URLSearchParams(req.url.split('?')[1])) ) || {};
     const limit = Number(q.limit) || 5;

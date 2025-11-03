@@ -14,6 +14,29 @@ export type Database = {
   }
   public: {
     Tables: {
+      chat_history: {
+        Row: {
+          id: string
+          user_id: string
+          user_message: string
+          bot_response: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          user_message: string
+          bot_response: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          user_message?: string
+          bot_response?: string
+          created_at?: string
+        }
+      }
       market_listings: {
         Row: {
           category: Database["public"]["Enums"]["listing_category"]

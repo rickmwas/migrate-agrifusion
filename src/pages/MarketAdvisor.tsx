@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -58,7 +59,7 @@ export default function MarketAdvisor() {
     queryKey: ['marketTrends'],
     queryFn: async () => {
       try {
-        const res = await fetch('/api/market-trends?limit=5');
+        const res = await fetch('http://localhost:8787/api/market-trends?limit=5');
         if (!res.ok) return [];
         return res.json();
       } catch {
@@ -74,7 +75,7 @@ export default function MarketAdvisor() {
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData?.session?.access_token;
 
-      const res = await fetch('/api/market-analyze', {
+      const res = await fetch('http://localhost:8787/api/market-analyze', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

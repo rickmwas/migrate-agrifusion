@@ -1,6 +1,8 @@
 import Ajv from 'ajv';
+import { chatWithGemini } from '../integrations/gemini/chat.js';
 
-const ajv = new Ajv();
+// Ajv package exports types that sometimes confuse TS in this setup; cast to any for instantiation
+const ajv = new (Ajv as any)();
 
 type SendToGeminiArgs = {
   prompt: string;
@@ -24,41 +26,14 @@ async function fetchWithRetry(url: string, opts: RequestInit, retries = 2, backo
   }
 }
 
-export async function sendToGemini({ prompt, schema, maxTokens = 1024, project, location }: SendToGeminiArgs) {
-  // Support GOOGLE_APPLICATION_CREDENTIALS or VERTEX_API_KEY
-  const apiKey = process.env.VERTEX_API_KEY;
-  const useApiKey = Boolean(apiKey);
+export async function sendToGemini({ prompt, schema, maxTokens = 1024 }: SendToGeminiArgs) {
+  // Use server-side SDK helper to get text response
+  const text = await chatWithGemini(prompt);
 
-  const endpoint = useApiKey
-    ? `https://us-central1-aiplatform.googleapis.com/v1/projects/${project}/locations/${location || 'us-central1'}/publishers/google/models/text-bison:predict`
-    : `https://us-central1-aiplatform.googleapis.com/v1/projects/${project}/locations/${location || 'us-central1'}/publishers/google/models/text-bison:predict`;
-
-  const body = {
-    instances: [
-      {
-        content: prompt,
-      },
-    ],
-    parameters: {
-      maxOutputTokens: maxTokens,
-      temperature: 0.2,
-    },
-  };
-
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-  };
-  if (useApiKey) headers['Authorization'] = `Bearer ${apiKey}`;
-
-  const res = await fetchWithRetry(endpoint, { method: 'POST', headers, body: JSON.stringify(body) });
-  const raw = await res.json();
-
-  // Attempt to extract text from possible response shapes
-  const text = raw?.predictions?.[0]?.content || raw?.prediction || raw?.response || JSON.stringify(raw);
+  const raw = { text };
 
   let parsed = null;
   if (schema) {
-    // Try parsing JSON out of the text
     const jsonTextMatch = text.match(/\{[\s\S]*\}/);
     const candidate = jsonTextMatch ? jsonTextMatch[0] : text;
     try {
@@ -73,9 +48,7 @@ export async function sendToGemini({ prompt, schema, maxTokens = 1024, project, 
       if (!valid) {
         // Retry once with a strict instruction
         const regenPrompt = `Return ONLY JSON that matches this schema: ${JSON.stringify(schema)}\n\n${prompt}`;
-        const retryRes = await fetchWithRetry(endpoint, { method: 'POST', headers, body: JSON.stringify({ instances: [{ content: regenPrompt }], parameters: { maxOutputTokens: maxTokens } }) });
-        const retryRaw = await retryRes.json();
-        const retryText = retryRaw?.predictions?.[0]?.content || JSON.stringify(retryRaw);
+        const retryText = await chatWithGemini(regenPrompt);
         const match2 = retryText.match(/\{[\s\S]*\}/);
         try {
           parsed = match2 ? JSON.parse(match2[0]) : JSON.parse(retryText);
