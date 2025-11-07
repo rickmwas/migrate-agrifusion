@@ -1,12 +1,12 @@
-# Welcome to your Lovable project
+# AgriFusion
 
-## Project info
+## Project Description
 
-**URL**: https://lovable.dev/projects/d4501639-b98a-4574-91c1-a85eb2e54baf
+AgriFusion is a comprehensive agricultural platform designed to empower farmers with AI-powered tools for weather analysis, market trends, quality checking, and community interaction. Built with React, TypeScript, and Supabase, featuring Gemini AI integration for intelligent insights.
 
 ## Local development and running the app (Supabase + Gemini server)
 
-This repository was generated from an automated tool and originally used a proprietary runtime. The project has been updated to be independent of that service and to use Supabase for backend and Google Vertex AI (Gemini) for LLM work. Follow these steps to run the app locally.
+This is a full-stack application with a React frontend and Express backend, using Supabase for database and authentication, and Google Vertex AI (Gemini) for LLM capabilities. Follow these steps to run the app locally.
 
 Prerequisites
 
@@ -28,7 +28,7 @@ Copy `.env.example` to `.env` and fill in the real values. Required variables:
 - VITE_SUPABASE_URL
 - VITE_SUPABASE_PUBLISHABLE_KEY
 - SUPABASE_SERVICE_ROLE_KEY (server-only)
-- VERTEX_API_KEY OR set GOOGLE_APPLICATION_CREDENTIALS to point to a service account JSON
+- GEMINI_API_KEY OR set GOOGLE_APPLICATION_CREDENTIALS to point to a service account JSON
 - VERTEX_PROJECT_ID
 - VERTEX_LOCATION (e.g., us-central1)
 

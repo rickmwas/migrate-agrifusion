@@ -10,29 +10,9 @@ export async function chatWithGemini(
     "You are an AI assistant specialized in agricultural topics. You help farmers with advice about farming, crop management, weather analysis, and other agriculture-related topics. Keep your responses helpful, practical, and focused on farming."
 ) {
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
 
-    // cast the chat config to any to avoid type errors if SDK types differ
-    const chat = model.startChat({
-      history: [
-        {
-          role: "user",
-          parts:
-            "You are an agricultural expert. Your name is AgriBot. Please keep your responses focused on farming and agriculture topics.",
-        },
-        {
-          role: "model",
-          parts:
-            "I understand. I am AgriBot, an agricultural expert assistant. I will focus on providing helpful advice and information about farming, crops, soil management, and other agriculture-related topics.",
-        },
-      ],
-      generationConfig: {
-        maxOutputTokens: 1000,
-        temperature: 0.7,
-      },
-    } as any);
-
-    const result = await chat.sendMessage(message);
+    const result = await model.generateContent([{ text: message }]);
     const response = result.response;
 
     return response.text();

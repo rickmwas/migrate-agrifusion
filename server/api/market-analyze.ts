@@ -57,12 +57,21 @@ export default async function handler(req: any, res: any) {
 
     if (!produce_type || !location) return res.status(400).json({ error: 'produce_type and location are required' });
 
-    // Call Gemini for weather
-    const weatherPrompt = `Provide current weather conditions for ${location}, Kenya. Return valid JSON matching:\n${JSON.stringify(weatherSchema)}`;
-    const weatherResult = await sendToGemini({ prompt: weatherPrompt, schema: weatherSchema, project: process.env.VERTEX_PROJECT_ID, location: process.env.VERTEX_LOCATION });
+    // Fetch real weather data from Open-Meteo
+    const geocodeRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(location)}&count=1`);
+    const geocodeData = await geocodeRes.json();
+    if (!geocodeData.results || geocodeData.results.length === 0) return res.status(404).json({ error: 'Location not found' });
 
-    // Market prompt uses weather impact
-    const weatherImpact = weatherResult.parsed?.weather_impact_on_farming || '';
+    const { latitude, longitude, name: locationName } = geocodeData.results[0];
+
+    const weatherRes = await fetch(
+      `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true&hourly=temperature_2m,precipitation,relativehumidity_2m,windspeed_10m,uv_index&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,weathercode&timezone=Africa/Nairobi&forecast_days=7`
+    );
+    const weather = await weatherRes.json();
+
+    const currentWeather = weather.current_weather;
+    const recentRainfall = weather.daily?.precipitation_sum?.slice(0, 7).reduce((sum: number, p: number) => sum + p, 0) || 0;
+    const weatherImpact = `Current temperature: ${currentWeather.temperature}°C, Conditions: ${currentWeather.weathercode}, Wind: ${currentWeather.windspeed} km/h, Recent rainfall: ${recentRainfall}mm over 7 days.`;
     const marketPrompt = `Analyze the market for ${produce_type} in ${location}, Kenya with the following inputs:\n- quality_grade: ${quality_grade || 'standard'}\n- quantity: ${quantity || ''}\n- weather_impact: ${weatherImpact}\n\nProvide output as JSON matching schema:\n${JSON.stringify(marketSchema)}`;
 
     const marketResult = await sendToGemini({ prompt: marketPrompt, schema: marketSchema, project: process.env.VERTEX_PROJECT_ID, location: process.env.VERTEX_LOCATION });
@@ -83,7 +92,7 @@ export default async function handler(req: any, res: any) {
       weather_impact: marketResult.parsed?.weather_impact || weatherImpact || null,
       recommendations: marketResult.parsed?.recommendations || null,
       confidence_score: marketResult.parsed?.confidence_score || null,
-      weather_raw: weatherResult.raw || null,
+      weather_raw: JSON.stringify(weather) || null,
       llm_raw: marketResult.raw || null,
     };
 

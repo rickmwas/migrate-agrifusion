@@ -7,3 +7,6 @@ export function chatWithGemini(): never {
     "chatWithGemini was imported in client code. Use the server API endpoint '/api/chat' instead."
   );
 }
+
+//import { ClientRequest supabaseAdmin } from "http";
+//import { lucide-react} from "/"-sijui ni nini hii

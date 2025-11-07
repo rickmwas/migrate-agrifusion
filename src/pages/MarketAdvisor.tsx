@@ -468,7 +468,7 @@ export default function MarketAdvisor() {
                             {trend.confidence_score}% confident
                           </Badge>
                           <span className="text-gray-400">
-                            {format(new Date(trend.created_date), 'MMM d, h:mm a')}
+                            {format(new Date(trend.created_at), 'MMM d, h:mm a')}
                           </span>
                         </div>
                       </div>

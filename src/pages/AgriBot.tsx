@@ -47,8 +47,8 @@ export default function AgriBot() {
 
     setIsLoading(true);
     try {
-      const { data: user } = await supabase.auth.getUser();
-      if (!user.user) {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
         throw new Error("User not authenticated");
       }
 
@@ -56,19 +56,21 @@ export default function AgriBot() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({ message }),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to get response from bot");
+        const errorData = await response.json();
+        throw new Error(`Failed to get response from bot: ${errorData.error || response.statusText}`);
       }
 
       const { botResponse } = await response.json();
 
       // Store the chat in Supabase
       const { error } = await supabase.from("chat_history").insert({
-        user_id: user.user.id,
+        user_id: session.user.id,
         user_message: message,
         bot_response: botResponse,
       });
@@ -80,10 +82,11 @@ export default function AgriBot() {
       // Invalidate and refetch chat history
       // You'll need to add queryClient from react-query to do this properly
       // For now, you can reload the page or implement optimistic updates
-      
+
       setMessage("");
     } catch (error) {
       console.error("Error sending message:", error);
+      alert(`Error: ${error.message}`);
     } finally {
       setIsLoading(false);
     }
